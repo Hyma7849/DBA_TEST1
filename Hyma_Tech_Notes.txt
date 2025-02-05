@@ -1,0 +1,85 @@
+
+
+PDB to PDB clone:
+****************
+
+
+srvr88: condb : pdb2 (Source)
+srvr98: tcdb : pdb2test (Target)
+
+High level steps :
+
+1. Test the connection in srvr98 by using --> tnsping condb 
+
+[oracle@srvr98 admin]$ tnsping condb
+
+TNS Ping Utility for Linux: Version 19.0.0.0.0 - Production on 20-JAN-2025 05:48:06
+
+Copyright (c) 1997, 2023, Oracle.  All rights reserved.
+
+Used parameter files:
+
+
+Used TNSNAMES adapter to resolve the alias
+Attempting to contact (DESCRIPTION = (ADDRESS_LIST = (ADDRESS = (PROTOCOL = TCP)(HOST = 192.168.1.88)(PORT = 1528))) (CONNECT_DATA = (SERVICE_NAME = condb)))
+OK (0 msec)
+
+2. Create database link in Target (srvr98) by using system user
+
+SQL> create database link clone_link connect to system identified by Welcome#123 using 'condb';
+
+Database link created.
+
+3. Test the database link (srvr98)
+
+SQL> select * from dual@clone_link;
+
+D
+-
+X
+
+4. Grant privileges for creating pluggable database in source container
+
+SQL> grant create pluggable database to system;
+
+Grant succeeded.
+
+5. Create pluggable database using database link 
+
+
+SQL> CREATE PLUGGABLE DATABASE pdb2test FROM pdb2@clone_link file_name_convert=('/u01/app/oracle/oradata/CONDB/pdb2/','/u01/app/oracle/oradata/TCDB/pdb2test/');
+
+Pluggable database created.
+
+
+
+
+
+
+Encrypted password for User :
+
+
+with t as (select dbms_metadata.get_ddl('USER','ABC') ddl from dual )
+select replace(substr(ddl,1,instr(ddl,'DEFAULT')-1),'CREATE','ALTER')||';'
+from t;
+      
+Consider S or T 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
